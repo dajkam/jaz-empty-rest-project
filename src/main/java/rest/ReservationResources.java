@@ -50,6 +50,10 @@ public class ReservationResources {
 			Guest guest = (Guest) em.createNamedQuery("guest.id", Guest.class)
 				.setParameter("goscId", reservationCreateDTO.getGuestId())
 				.getSingleResult();
+			
+			Room room = (Room) em.createNamedQuery("room.id", Room.class)
+				.setParameter("roomId", reservationCreateDTO.getRoomId())
+				.getSingleResult();
 			reservation.setGosc(guest);
 			//TODO  ...
 		
@@ -84,11 +88,11 @@ public class ReservationResources {
 	@GET 
 	@Path("/{id}/guest")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Guest getGuestRezervation(@PathParam("id")int rezervationId){
+	public Response getGuestRezervation(@PathParam("id")int rezervationId){
 		Guest r = db.getReservation(rezervationId).getGosc();
 		if(r==null)
-			return null;
-		return r;
+			return Response.status(404).build();
+		return Response.ok(r).build();
 	}
 	
 	
