@@ -1,5 +1,7 @@
 package rest;
 import javax.*;
+
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -25,6 +27,7 @@ import java.util.List;
 
 
 import model.serices.GuestServices;
+import model.serices.RezervationServices;
 
 import static javax.ws.rs.core.Response.Status.*;
 
@@ -34,6 +37,7 @@ import static javax.ws.rs.core.Response.Status.*;
 public class GuestResources {
 	
 	private GuestServices db = new GuestServices();
+	private RezervationServices db2 = new RezervationServices();
 	@PersistenceContext 
 	EntityManager em;
 	
@@ -66,6 +70,25 @@ public class GuestResources {
 			return Response.status(NOT_FOUND).build();
 		}
 	}
+	
+	@POST 
+	@Path("/{id}/res")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response addRes(@PathParam("id")int guestId,Reservation r){ 
+		try{
+		Guest result = em.createQuery("guest.id",Guest.class)
+				.setParameter("guestId", guestId)
+				.getSingleResult();
+		r.setGosc(result);
+		db2.addReservation(r);
+		em.persist(r);
+		return Response.ok().build();}
+		catch (NoResultException e){
+			return Response.status(NOT_FOUND).build();
+		}
+	}
+	
+	
 	
 	@DELETE 
 	@Path("/{id}")
