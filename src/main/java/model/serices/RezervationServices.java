@@ -7,6 +7,8 @@ import model.Reservation;
 
 import java.util.*;
 
+import org.joda.time.DateTimeZone;
+
 public class RezervationServices {
 	
 private List<Reservation>lista = new ArrayList<Reservation>();
@@ -38,9 +40,9 @@ private List<Reservation>lista = new ArrayList<Reservation>();
 				rezerwacja_element_listy.setGosc(rezerwacja_szukany.getGosc());
 				rezerwacja_element_listy.setPokoj(rezerwacja_szukany.getPokoj());
 				
-				rezerwacja_element_listy.setDni(rezerwacja_element_listy.pobyt())  ;
+				rezerwacja_element_listy.setDni(rezerwacja_szukany.pobyt(rezerwacja_szukany.getStart(),rezerwacja_szukany.getEnd()))  ;
 				rezerwacja_element_listy.setCena_p(rezerwacja_szukany.getPokoj().getCena());
-				rezerwacja_element_listy.setNaleznosc(rezerwacja_szukany.zaplata());  
+				rezerwacja_element_listy.setNaleznosc(rezerwacja_szukany.zaplata(rezerwacja_element_listy.getDni(),rezerwacja_element_listy.getCena_p()));  
 				
 			}
 		}

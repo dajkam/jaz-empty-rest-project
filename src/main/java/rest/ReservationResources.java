@@ -20,9 +20,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import org.joda.time.MutableDateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 import model.serices.RezervationServices;
 
@@ -36,31 +40,47 @@ public class ReservationResources {
 	@PersistenceContext 
 	EntityManager em;
 	
-	@GET
+	@GET 
+	@Path("/show")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Reservation> getAll(){
 		return db.getAll();
 	} 
 	
 	@POST 
+	@Path("/add")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response addReservation(ReservationCreateDTO reservationCreateDTO){
+	public Response addReservation(ReservationCreateDTO rDTO){
 		Reservation reservation = new Reservation();
 		try{
 			Guest guest = (Guest) em.createNamedQuery("guest.id", Guest.class)
-				.setParameter("goscId", reservationCreateDTO.getGuestId())
+				.setParameter("goscId", rDTO.getGuestId())
 				.getSingleResult();
 			
 			Room room = (Room) em.createNamedQuery("room.id", Room.class)
-				.setParameter("roomId", reservationCreateDTO.getRoomId())
+				.setParameter("roomId", rDTO.getRoomId())
 				.getSingleResult();
-			reservation.setGosc(guest);
-			//TODO  ...
+			
+			
+			   DateTime start = rDTO.getStart();
+			  DateTime end = rDTO.getEnd();
+			reservation.setGosc(guest); 
+			reservation.setPokoj(room); 
+			reservation.setStart(start);
+			//reservation.setStart(rDTO.getStart().getYear(),rDTO.getStart().getMonthOfYear(),rDTO.getStart().getDayOfMonth());
+			reservation.setEnd(end);
+			//reservation.setEnd(rDTO.getEnd().getYear(),rDTO.getEnd().getMonthOfYear(),rDTO.getEnd().getDayOfMonth());
+			reservation.setDni(reservation.pobyt(start,end));
+			reservation.setCena_p(reservation.getPokoj().getCena());
+			reservation.setNaleznosc(reservation.zaplata(reservation.getDni(),reservation.getCena_p()));
+		
+			
 		
 		}catch (NoResultException e) {
 			return Response.status(Status.NOT_FOUND).build();
 		}
 		db.addReservation(reservation);
+		em.persist(reservation);
 		return Response.ok(reservation.getId()).build();
 		
 	}
@@ -76,7 +96,7 @@ public class ReservationResources {
 	}
 	
 	@DELETE 
-	@Path("/{id}")
+	@Path("{id}")
 	public Response delete(@PathParam("id") int id){
 		Reservation r = db.getReservation(id); 
 		if(r==null)
